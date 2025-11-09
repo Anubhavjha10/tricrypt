@@ -1,0 +1,1038 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriCrypt: Flexible Data Security</title>
+    
+    <!-- NEW: Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EA580C' stroke-width='2'><path stroke-linecap='round' stroke-linejoin='round' d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z' /></svg>">
+    
+    <!-- Tailwind CSS CDN (Fixed Link) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Inter Font (UPDATED: Added Orbitron) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            background-color: #ffffff; /* Always white */
+            color: #111827; /* Default dark text */
+        }
+
+        /* NEW: Brand Font */
+        .font-brand {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Matrix Canvas */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind content, but in front of body bg */
+            opacity: 0.2; /* Lightened so text is readable */
+        }
+
+        /* Custom scrollbar for consistency */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; /* Light mode track */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Hero text gradient - NEW COLORS */
+        .hero-gradient-text {
+            background-image: linear-gradient(90deg, #F97316, #EF4444); /* Orange-500 to Red-600 */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Card background */
+        .evervault-card {
+            background-color: rgba(255, 255, 255, 0.95); /* Lighter shade with transparency, more opaque */
+            border: 1px solid rgba(200, 200, 200, 0.5); /* Subtle border */
+        }
+
+        /* Input/textarea styling */
+        .form-input-light {
+            background-color: #f9fafb; /* Gray-50 */
+            border-color: #d1d5db; /* Gray-300 */
+            color: #111827; /* Gray-900 */
+        }
+        .form-input-light:focus {
+            border-color: #F97316; /* Orange-500 */
+            box-shadow: 0 0 0 1px #F97316;
+        }
+
+        /* Output textarea styling */
+        .form-output-light {
+            background-color: #f3f4f6; /* Gray-100 */
+            border-color: #e5e7eb; /* Gray-200 */
+            color: #4b5563; /* Gray-600 */
+        }
+
+        /* Status box styling */
+        .status-box-local { /* Renamed for local positioning */
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-top: 12px; /* 12px margin top */
+            padding: 12px; /* 12px padding */
+            border-radius: 6px; /* 6px border radius */
+        }
+        .status-error-light {
+            background-color: #fee2e2; /* Red-100 */
+            color: #991b1b; /* Red-800 */
+        }
+        .status-success-light {
+            background-color: #dcfce7; /* Green-100 */
+            color: #166534; /* Green-800 */
+        }
+
+        /* Hover effects - NEW COLORS */
+        .nav-item-hover:hover {
+            color: #F97316; /* Orange-500 */
+            transition: color 0.2s ease;
+        }
+        
+        .card-hover-effect {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover-effect:hover {
+            transform: scale(1.03);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer V-shape clip-path */
+        #footer-v-shape {
+            -webkit-clip-path: polygon(0 15%, 50% 0, 100% 15%, 100% 100%, 0 100%);
+            clip-path: polygon(0 15%, 50% 0, 100% 15%, 100% 100%, 0 100%);
+        }
+
+        /* Thunderstorm Animation for Buttons */
+        @keyframes thunderstorm {
+            0% { transform: translate(0); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+            10% { transform: translate(-3px, 3px); }
+            20% { transform: translate(3px, -3px); }
+            30% { transform: translate(-3px, 3px); box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.7); } /* Flash */
+            40% { transform: translate(3px, -3px); }
+            50% { transform: translate(-3px, 3px); }
+            60% { transform: translate(3px, -3px); }
+            70% { transform: translate(-3px, 3px); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } /* Flash ends */
+            80% { transform: translate(3px, -3px); }
+            90% { transform: translate(-3px, 3px); }
+            100% { transform: translate(0); }
+        }
+
+        .thunder-animation {
+            animation: thunderstorm 0.5s ease-in-out both;
+        }
+
+        /* NEW: Active state for mobile nav */
+        .mobile-nav-active {
+            color: #F97316; /* Orange-500 */
+        }
+        
+        /* NEW: Styles for code blocks on API page */
+        .code-block {
+            background-color: #f3f4f6; /* gray-100 */
+            border: 1px solid #d1d5db; /* gray-300 */
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            color: #111827; /* gray-900 */
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .code-block .comment {
+            color: #6b7280; /* gray-500 */
+        }
+        .code-block .function {
+            color: #c2410c; /* orange-700 */
+        }
+        .code-block .variable {
+            color: #1d4ed8; /* blue-700 */
+        }
+
+    </style>
+</head>
+<body class="bg-white text-gray-900 min-h-screen">
+
+    <!-- Matrix Background Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Main Content Wrapper -->
+    <div class="relative z-10 pb-20 md:pb-0"> <!-- Added padding-bottom for mobile nav */ -->
+
+        <!-- Navigation Bar -->
+        <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-md shadow-sm py-4">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <!-- UPDATED: Logo now links to home -->
+                <a href="#" onclick="showPage('home'); return false;" class="flex items-center space-x-2">
+                    <!-- Logo/Icon - NEW COLOR -->
+                    <svg class="h-8 w-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z" />
+                    </svg>
+                    <!-- Name Updated & Font Added -->
+                    <span class="text-2xl font-bold text-gray-900 font-brand">TriCrypt</span>
+                </a>
+                
+                <!-- Desktop Links (Hide on mobile) - UPDATED LINKS -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" onclick="showPage('home'); return false;" class="text-gray-600 hover:text-orange-600 nav-item-hover text-base md:text-lg font-medium">Home</a>
+                    <a href="#" onclick="showPage('home', '#how-it-works'); return false;" class="text-gray-600 hover:text-orange-600 nav-item-hover text-base md:text-lg font-medium">How It Works</a>
+                    <a href="#" onclick="showPage('home', '#tools'); return false;" class="text-gray-600 hover:text-orange-600 nav-item-hover text-base md:text-lg font-medium">Tools</a>
+                    <!-- NEW: API Link -->
+                    <a href="#" onclick="showPage('api'); return false;" class="text-gray-600 hover:text-orange-600 nav-item-hover text-base md:text-lg font-medium">API</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- NEW: Page Container -->
+        <main id="page-container">
+
+            <!-- HOME PAGE (Existing Content) -->
+            <section id="page-home">
+                <!-- Intro Section (Hero) -->
+                <section id="intro" class="relative overflow-hidden py-24 md:py-36 text-center">
+                    <div class="container mx-auto px-4 max-w-4xl">
+                        <h1 class="text-4xl sm:text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+                            <span class="text-gray-900">Your Data.</span> <br class="md:hidden">
+                            <span class="hero-gradient-text">Only Yours.</span>
+                        </h1>
+                        <p class="text-lg sm:text-xl md:text-2xl text-gray-600 leading-relaxed mb-8">
+                            End-to-end encrypt your sensitive information with TriCrypt. <br>
+                            No server access, just your control.
+                        </p>
+                        <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <!-- Buttons - NEW COLORS -->
+                            <a href="#" onclick="showPage('home', '#tools'); return false;" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                                Encrypt Data
+                            </a>
+                            <a href="#" onclick="showPage('home', '#how-it-works'); return false;" class="inline-block bg-transparent border-2 border-gray-300 text-gray-800 font-semibold py-3 px-8 rounded-full transition-all transform hover:bg-gray-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                                How It Works
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- How It Works Section -->
+                <section id="how-it-works" class="py-24"> <!-- Removed bg-gray-50 -->
+                    <div class="container mx-auto px-4 text-center max-w-5xl">
+                        <h2 class="text-4xl md:text-5xl font-bold mb-12 text-gray-900">
+                            <!-- Name Updated -->
+                            How TriCrypt Works
+                        </h2>
+                        <div class="grid md:grid-cols-3 gap-12">
+                            <!-- Card 1 - NEW COLORS -->
+                            <div class="p-8 rounded-xl evervault-card shadow-lg flex flex-col items-center card-hover-effect">
+                                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-6">
+                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17.25v.001M9.75 14.25v.001M9.75 11.25v.001M12 17.25v.001M12 14.25v.001M12 11.25v.001M14.25 17.25v.001M14.25 14.25v.001M14.25 11.25v.001M4.5 21V5.636c0-1.182.596-2.312 1.622-2.914l5.252-3.151c.96-.576 2.136-.576 3.096 0l5.252 3.151C20.904 3.324 21.5 4.454 21.5 5.636V21m-5.25-9v-4.5H8.25v4.5" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold mb-4 text-gray-900">1. Client-Side Encryption</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    Your data is encrypted directly in your browser. It never reaches our servers.
+                                </p>
+                            </div>
+                            <!-- Card 2 - NEW COLORS -->
+                            <div class="p-8 rounded-xl evervault-card shadow-lg flex flex-col items-center card-hover-effect">
+                                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-6">
+                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold mb-4 text-gray-900">2. Multi-Factor Key</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    A strong encryption key is derived from your Password and Secret Answers.
+                                </p>
+                            </div>
+                            <!-- Card 3 - NEW COLORS -->
+                            <div class="p-8 rounded-xl evervault-card shadow-lg flex flex-col items-center card-hover-effect">
+                                <div class="flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-6">
+                                    <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002.92 12c0 3.072 1.578 5.792 3.91 7.322l3.22 2.515C11.378 21.737 12.007 22 12.637 22h0c.63-.007 1.259-.263 1.777-.732l3.22-2.515c2.332-1.53 3.91-4.25 3.91-7.322a12.001 12.001 0 00-3.382-8.06z" />
+                                    </svg>
+                                </div>
+                                <h3 class="text-2xl font-semibold mb-4 text-gray-900">3. Zero-Knowledge Proof</h3>
+                                <p class="text-gray-600 leading-relaxed">
+                                    Only your secrets can unlock the data. No third party can ever read it.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Encryption/Decryption Tools Section -->
+                <section id="tools" class="py-24">
+                    <div class="container mx-auto px-4 max-w-7xl">
+                        <h2 class="text-4xl md:text-5xl font-bold mb-12 text-center text-gray-900">
+                            Encrypt or Decrypt Data
+                        </h2>
+                        
+                        <!-- NEW: Warning Box -->
+                        <div class="max-w-4xl mx-auto p-4 rounded-lg bg-yellow-100 border border-yellow-400 text-yellow-800 mb-12">
+                            <div class="flex items-center">
+                                <svg class="h-6 w-6 mr-3 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <p class="font-semibold">
+                                    <span class="font-bold">Important:</span> This is a zero-knowledge tool. We cannot recover your data.
+                                    Please save your <strong class="font-bold">Password, Security Answer,</strong> and <strong class="font-bold">Secret PIN</strong> in a safe place.
+                                    <strong class="font-bold">They cannot be reset or recovered.</strong>
+                                </p>
+                            </div>
+                        </div>
+
+
+                        <div class="grid md:grid-cols-2 gap-8">
+                            
+                            <!-- ENCRYPTION CARD -->
+                            <div class="evervault-card p-6 rounded-xl shadow-2xl flex flex-col justify-between border-2 border-orange-200">
+                                <div>
+                                    <!-- Title - NEW COLOR -->
+                                    <h3 class="text-2xl font-bold mb-5 text-center text-orange-600">Encrypt Data</h3>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="plain-text" class="block text-sm font-semibold text-gray-800 mb-1">Your Secret Message</label>
+                                            <textarea id="plain-text" rows="4" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all placeholder:text-gray-400 border-2" placeholder="Type your message here..."></textarea>
+                                        </div>
+
+                                        <h4 class="text-lg font-semibold pt-2 text-gray-800">3-Step Verification (Required to unlock)</h4>
+                                        
+                                        <div>
+                                            <label for="encrypt-pass" class="block text-sm font-semibold text-gray-800 mb-1">Secret Password</label>
+                                            <input type="password" id="encrypt-pass" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all placeholder:text-gray-400 border-2" placeholder="Choose a strong password">
+                                            <!-- Password criteria added -->
+                                            <div id="password-criteria" class="text-xs text-gray-500 mt-1">
+                                                Must be 8+ chars, with 1 uppercase, 1 lowercase, 1 number, & 1 special character.
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="encrypt-q1" class="block text-sm font-semibold text-gray-800 mb-1">Security Answer</label>
+                                            <input type="text" id="encrypt-q1" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all placeholder:text-gray-400 border-2" placeholder="Answer to secret question">
+                                        </div>
+
+                                        <div>
+                                            <!-- Text Changed -->
+                                            <label for="encrypt-q2" class="block text-sm font-semibold text-gray-800 mb-1">Secret PIN</label>
+                                            <input type="text" id="encrypt-q2" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all placeholder:text-gray-400 border-2" placeholder="Enter your Secret PIN">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-center"> <!-- Button Centered -->
+                                    <!-- Button - NEW COLORS -->
+                                    <button id="encrypt-button" class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                                        Encrypt Now
+                                    </button>
+
+                                    <!-- NEW: Local Status Box for Encryption -->
+                                    <div id="encrypt-status-box" class="status-box-local hidden"></div>
+
+                                    <div class="mt-4">
+                                        <label for="encrypted-output" class="block text-sm font-semibold text-gray-800 mb-1">
+                                            Encrypted Data (Copy and share this)
+                                            <!-- NEW: Copy Icon Button -->
+                                            <button id="copy-icon-button" class="ml-2 inline-flex items-center p-1 rounded-md text-gray-500 hover:text-orange-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2.586m-4.414-4H5a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2V9.586m-4.414-4.414L9.586 2H15V7h-5z" />
+                                                </svg>
+                                            </button>
+                                        </label>
+                                        <textarea id="encrypted-output" rows="4" readonly class="w-full form-output-light bg-gray-100 text-gray-600 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-gray-500 cursor-not-allowed border-2" placeholder="Encrypted code will appear here..."></textarea>
+                                        <!-- OLD Copy Button Removed -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DECRYPTION CARD -->
+                            <div class="evervault-card p-6 rounded-xl shadow-2xl flex flex-col justify-between border-2 border-red-200">
+                                <div>
+                                    <!-- Title - NEW COLOR -->
+                                    <h3 class="text-2xl font-bold mb-5 text-center text-red-600">Decrypt Data</h3>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="encrypted-input" class="block text-sm font-semibold text-gray-800 mb-1">Encrypted Data</label>
+                                            <textarea id="encrypted-input" rows="4" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400 border-2" placeholder="Paste the encrypted code here..."></textarea>
+                                        </div>
+
+                                        <h4 class="text-lg font-semibold pt-2 text-gray-800">3-Step Verification (To unlock)</h4>
+                                        
+                                        <div>
+                                            <label for="decrypt-pass" class="block text-sm font-semibold text-gray-800 mb-1">Secret Password</label>
+                                            <input type="password" id="decrypt-pass" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400 border-2" placeholder="Enter password">
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="decrypt-q1" class="block text-sm font-semibold text-gray-800 mb-1">Security Answer</label>
+                                            <input type="text" id="decrypt-q1" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400 border-2" placeholder="First secret answer">
+                                        </div>
+
+                                        <div>
+                                            <!-- Text Changed -->
+                                            <label for="decrypt-q2" class="block text-sm font-semibold text-gray-800 mb-1">Secret PIN</label>
+                                            <input type="text" id="decrypt-q2" class="w-full form-input-light bg-white text-gray-900 border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400 border-2" placeholder="Enter your Secret PIN">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-8 text-center"> <!-- Button Centered -->
+                                    <!-- Button - NEW COLORS -->
+                                    <button id="decrypt-button" class="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                                        Decrypt Now
+                                    </button>
+
+                                    <!-- NEW: Local Status Box for Decryption -->
+                                    <div id="decrypt-status-box" class="status-box-local hidden"></div>
+
+                                    <div class="mt-4">
+                                        <label for="decrypted-output" class="block text-sm font-semibold text-gray-800 mb-1">Your Decrypted Message</label>
+                                        <textarea id="decrypted-output" rows="4" readonly class="w-full form-output-light bg-gray-100 text-gray-600 border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-gray-500 cursor-not-allowed border-2" placeholder="Decrypted message will appear here..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- NEW: PRIVACY POLICY PAGE -->
+            <section id="page-privacy" class="hidden py-24">
+                <div class="container mx-auto px-4 max-w-4xl">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gray-900">Privacy Policy</h2>
+                    <div class="space-y-6 text-gray-700 leading-relaxed text-lg">
+                        <p class="font-bold text-xl text-red-600">Your Privacy is Our Priority. We Collect Nothing.</p>
+                        
+                        <p>TriCrypt is a client-side, zero-knowledge encryption tool. This means we have no access to your data, your password, or your keys. All encryption and decryption operations happen exclusively within your browser on your own device.</p>
+                        
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">1. Data We Do Not Collect</h3>
+                        <p>We want to be perfectly clear. We do **not** collect, store, log, or transmit any of the following:</p>
+                        <ul class="list-disc list-inside space-y-2 pl-4">
+                            <li>The message you encrypt.</li>
+                            <li>The data you decrypt.</li>
+                            <li>Your Secret Password.</li>
+                            <li>Your Security Answer.</li>
+                            <li>Your Secret PIN.</li>
+                            <li>Any keys derived from your secrets.</li>
+                            <li>Your IP address or any other personal identifiers.</li>
+                        </ul>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">2. How It Works</h3>
+                        <p>The encryption key is generated in your browser from your three secret inputs. This key exists only for the duration of your session and is never sent to our server (or any server). The encrypted data you see is just scrambled text; only you have the "keys" to unlock it.</p>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">3. The "No-Reset" Consequence</h3>
+                        <p>Because we don't have your data, we cannot help you if you forget your Password, Answer, or PIN. There is no "Forgot Password" link because we have nothing to reset. Your data will be permanently undecipherable if you lose any of your three keys. This is the mathematical proof of your privacy.</p>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">4. Cookies</h3>
+                        <p>This website does not use any tracking cookies, analytics, or advertising. We may use essential local storage only to save your preference, but not to track you.</p>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">5. Changes to This Policy</h3>
+                        <p>We may update this policy. If we do, the changes will be posted on this page. We will likely never change our core "zero-knowledge" policy.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NEW: FAQ PAGE -->
+            <section id="page-faq" class="hidden py-24">
+                <div class="container mx-auto px-4 max-w-4xl">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-12 text-gray-900">Frequently Asked Questions (FAQ)</h2>
+                    
+                    <div class="space-y-8">
+                        <!-- FAQ Item 1 -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Q: Is my data really safe?</h3>
+                            <p class="text-gray-700 leading-relaxed text-lg">A: Yes. Your data is encrypted using AES-256-GCM, which is a military-grade encryption standard. The encryption key is derived from your unique 3-step verification (Password, Answer, PIN). Without all three, decrypting the data is mathematically impossible.</p>
+                        </div>
+
+                        <!-- FAQ Item 2 -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Q: What data do you store on your servers?</h3>
+                            <p class="text-gray-700 leading-relaxed text-lg">A: **Absolutely nothing.** TriCrypt is a "zero-knowledge" tool. We have no database, and no server-side code that processes your data. Everything happens inside your browser. We cannot see your message, your password, or your keys.</p>
+                        </div>
+
+                        <!-- FAQ Item 3 -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Q: I forgot my Password / Answer / PIN. Can you reset it?</h3>
+                            <p class="text-gray-700 leading-relaxed text-lg"><strong class="font-bold text-red-600">NO. We cannot recover your keys.</strong> Because we don't store your data, there is no "forgot password" option. If you forget any of your three secret keys, your data is locked forever. This is the guarantee that proves we can't access your data, and it's why you MUST save your keys in a safe place.</p>
+                        </div>
+
+                        <!-- FAQ Item 4 -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Q: If a hacker gets my encrypted data, can they decrypt it?</h3>
+                            <p class="text-gray-700 leading-relaxed text-lg">A: No. The encrypted text is useless without your three secret keys. A hacker would have to guess all three keys, which is protected by PBKDF2 (100,000 iterations). This makes a "brute-force" attack practically impossible—it would take thousands of years.</p>
+                        </div>
+
+                        <!-- FAQ Item 5 -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-900 mb-2">Q: Is TriCrypt free to use?</h3>
+                            <p class="text-gray-700 leading-relaxed text-lg">A: Yes, this tool is provided free of charge for personal and non-commercial use. All features are available to you without any cost.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NEW: COPYRIGHT PAGE -->
+            <section id="page-copyright" class="hidden py-24">
+                <div class="container mx-auto px-4 max-w-4xl">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-8 text-gray-900">Copyright Notice</h2>
+                    <div class="space-y-6 text-gray-700 leading-relaxed text-lg">
+                        <p>&copy; 2025 TriCrypt. All rights reserved.</p>
+                        
+                        <p>All content and graphics on this site are the property of TriCrypt unless otherwise stated. The underlying code, including the HTML, CSS, and JavaScript used to create this client-side encryption tool, is protected by copyright law.</p>
+                        
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">Use of This Tool</h3>
+                        <p>You are granted a license to use this tool for its intended purpose: encrypting and decrypting data on your own device. You may not reverse-engineer, decompile, or disassemble the software, nor claim it as your own.</p>
+                        
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">Disclaimer</h3>
+                        <p>This tool is provided "as is" without warranty of any kind. The creators of TriCrypt are not liable for any data loss, including forgotten passwords or keys. By using this tool, you agree to take full responsibility for remembering your access credentials.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NEW: API PAGE -->
+            <section id="page-api" class="hidden py-24">
+                <div class="container mx-auto px-4 max-w-4xl">
+                    
+                    <!-- UPDATED: Made responsive for mobile -->
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8">
+                        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4 sm:mb-0 text-center sm:text-left">Developer API</h2>
+                        
+                        <!-- NEW: Coming Soon Banner -->
+                        <!-- UPDATED: Made full-width on mobile -->
+                        <div class="w-full sm:w-auto inline-block bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 px-6 rounded-lg shadow-lg">
+                            <div class="flex items-center justify-center sm:justify-start space-x-3">
+                                <svg class="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.573-1.066z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span class="text-lg font-semibold">Coming Soon</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 text-gray-700 leading-relaxed text-lg">
+                        <p class="text-xl">Integrate true end-to-end encryption (E2EE) into your chat, messaging, or file-sharing application with the TriCrypt API.</p>
+                        
+                        <div class="p-4 rounded-lg bg-orange-100 border border-orange-300 text-orange-800">
+                            <p><strong class="font-bold">This is different:</strong> The API uses Asymmetric (Public/Private Key) Encryption, which is built for communication. This is different from the symmetric 3-key tool on our main page, which is built for personal storage.</p>
+                        </div>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">How It Will Work</h3>
+                        <p>Our API is built on the principle of "Asymmetric Encryption." Your users will no longer need to share passwords. Instead, each user gets a pair of keys:</p>
+                        <ul class="list-disc list-inside space-y-2 pl-4">
+                            <li><strong class="text-gray-900">Public Key (The "Lock"):</strong> You share this key with the world. Anyone can use it to encrypt a message for you.</li>
+                            <li><strong class="text-gray-900">Private Key (The "Key"):</strong> You keep this secret. It is the only key in the world that can open messages locked with your Public Key.</li>
+                        </ul>
+
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">Example Workflow for a Chat App</h3>
+                        <p>Imagine User 'A' wants to send a secret message to User 'B'.</p>
+                        <div class="code-block">
+<pre><span class="comment">// 1. Both users generate their keys (only once)</span>
+<span class="variable">const userA_keys</span> = <span class="function">await</span> <span class="variable">triCrypt.generateKeys</span>();
+<span class="comment">// userA_keys = { publicKey: "...", privateKey: "..." }</span>
+
+<span class="comment">// 2. Users store their Public Key on your server</span>
+<span class="function">await</span> <span class="variable">yourServer.saveUserPublicKey</span>(<span class="variable">userA_keys.publicKey</span>);
+
+<span class="comment">// 3. User A wants to message User B. They fetch B's Public Key</span>
+<span class="variable">const userB_publicKey</span> = <span class="function">await</span> <span class="variable">yourServer.getPublicKeyFor</span>(<span class="variable">'userB'</span>);
+
+<span class="comment">// 4. User A encrypts the message using B's Public Key</span>
+<span class="variable">const encryptedMessage</span> = <span class="function">await</span> <span class="variable">triCrypt.encrypt</span>(<span class="variable">'Hello User B!'</span>, <span class="variable">userB_publicKey</span>);
+
+<span class="comment">// 5. User A sends the encryptedMessage. User B receives it and decrypts it with their OWN Private Key.</span>
+<span class="variable">const decryptedMessage</span> = <span class="function">await</span> <span class="variable">triCrypt.decrypt</span>(<span class="variable">encryptedMessage</span>, <span class="variable">userB_keys.privateKey</span>);
+<span class="comment">// decryptedMessage = "Hello User B!"</span>
+</pre>
+                        </div>
+                        
+                        <h3 class="text-2xl font-semibold text-gray-900 pt-4">Get Notified</h3>
+                        <p>Our API is currently in development. To get notified when our beta is available, please... hang tight! We're zero-knowledge, we don't even have a mailing list!</p>
+                        <p class="font-semibold">Check back here for updates soon.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main> <!-- End Page Container -->
+
+        <!-- New Semi-Circle Footer Section -->
+        <footer id="footer-v-shape" class="relative mt-32 pt-48 md:pt-56 pb-16 bg-gray-100 text-gray-900">
+            
+            <!-- Dome glow - NEW COLOR -->
+            <div id="dome-background" class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full" 
+                 style="background: radial-gradient(ellipse at top, rgba(249, 115, 22, 0.15), transparent 70%); pointer-events: none;">
+            </div>
+
+            <!-- Content Wrapper -->
+            <div class="relative z-10 container mx-auto px-4 text-center max-w-4xl">
+                
+                <!-- Flexible Security Content -->
+                <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight text-gray-900 mb-6">
+                    <span class="hero-gradient-text">Flexible Data Security.</span> <br>
+                    <span class="text-3xl sm:text-4xl md:text-5xl text-gray-800">For Every Kind of Data.</span>
+                </h2>
+                <p class="text-lg sm:text-xl text-gray-600 leading-relaxed mb-8">
+                    Our client-side encryption solution gives you full control over data security, <br>without server-side complexity.
+                </p>
+                <!-- Button - NEW COLORS -->
+                <a href="#" onclick="showPage('home', '#how-it-works'); return false;" class="inline-block bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2">
+                    Learn More
+                </a>
+            
+                <!-- Footer Content -->
+                <div class="mt-16 pt-8 border-t border-gray-300 text-center text-gray-600">
+                    
+                    <!-- NEW: Footer Links -->
+                    <div class="flex justify-center space-x-6 mb-4">
+                        <a href="#" onclick="showPage('privacy'); return false;" class="text-gray-600 hover:text-orange-600 font-medium">Privacy Policy</a>
+                        <a href="#" onclick="showPage('faq'); return false;" class="text-gray-600 hover:text-orange-600 font-medium">FAQ</a>
+                    </div>
+
+                    <!-- Name Updated & Converted to Link -->
+                    <p>
+                        <a href="#" onclick="showPage('copyright'); return false;" class="hover:text-orange-600 transition-colors">
+                            &copy; 2025 TriCrypt. All rights reserved. Built with ❤️ for data privacy.
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </footer>
+
+        <!-- NEW: Mobile Bottom Navigation Bar -->
+        <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md border-t border-gray-200 shadow-[0_-2px_5px_rgba(0,0,0,0.05)] z-50">
+            <div class="flex justify-around items-center h-16">
+                <!-- Home Link -->
+                <a href="#" onclick="showPage('home', null, this); return false;" class="mobile-nav-link mobile-nav-active flex flex-col items-center justify-center" data-page="home">
+                    <!-- Icon: Using a filled style for "active" look -->
+                    <svg class="h-6 w-6 mb-1" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z"/>
+                    </svg>
+                    <span class="text-xs font-semibold">Home</span>
+                </a>
+                
+                <!-- NEW: How It Works Link -->
+                <a href="#" onclick="showPage('home', '#how-it-works', this); return false;" class="mobile-nav-link flex flex-col items-center justify-center text-gray-600 hover:text-orange-600" data-page="home">
+                    <!-- Icon: Question Mark -->
+                    <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.79 4 4 0 .863-.29 1.66-.777 2.288M12 18h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-xs font-medium">How It Works</span>
+                </a>
+
+                <!-- Tools Link -->
+                <a href="#" onclick="showPage('home', '#tools', this); return false;" class="mobile-nav-link flex flex-col items-center justify-center text-gray-600 hover:text-orange-600" data-page="home">
+                    <!-- Icon -->
+                    <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z" />
+                    </svg>
+                    <span class="text-xs font-medium">Tools</span>
+                </a>
+
+                <!-- API Link (Replaced FAQ) -->
+                <a href="#" onclick="showPage('api', null, this); return false;" class="mobile-nav-link flex flex-col items-center justify-center text-gray-600 hover:text-orange-600" data-page="api">
+                    <!-- Icon -->
+                    <svg class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 16L10 4" />
+                    </svg>
+                    <span class="text-xs font-medium">API</span>
+                </a>
+            </div>
+        </div>
+
+    </div> <!-- End Main Content Wrapper -->
+<script>
+        // --- Matrix Background Logic ---
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let characters = '01'; // Using binary for a simpler "data" look
+        characters = characters.split('');
+
+        const fontSize = 14;
+        let columns = canvas.width / fontSize;
+
+        let drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            // White background with alpha to create fading trail
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.04)'; // Slower fade trail
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Text color - NEW COLOR
+            ctx.fillStyle = '#EA580C'; // Darker Orange (Orange-600)
+            ctx.font = fontSize + 'px Inter';
+
+            for (let i = 0; i < drops.length; i++) {
+                
+                // Draw all columns
+                const text = characters[Math.floor(Math.random() * characters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Always update the drop position for all columns
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        let matrixInterval = setInterval(drawMatrix, 80); // Slowed down interval
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Recalculate columns
+            columns = canvas.width / fontSize;
+
+            // Reset drops
+            drops = [];
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+        });
+
+
+        // --- Theme Toggle Logic (REMOVED) ---
+
+
+        // --- DOM Elements ---
+        const encryptButton = document.getElementById('encrypt-button');
+        const decryptButton = document.getElementById('decrypt-button');
+        const copyIconButton = document.getElementById('copy-icon-button'); // Changed to new icon button
+        
+        // NEW: Local Status Boxes
+        const encryptStatusBox = document.getElementById('encrypt-status-box');
+        const decryptStatusBox = document.getElementById('decrypt-status-box');
+
+        // Encryption fields
+        const plainTextInput = document.getElementById('plain-text');
+        const encryptPass = document.getElementById('encrypt-pass');
+        const encryptQ1 = document.getElementById('encrypt-q1');
+        const encryptQ2 = document.getElementById('encrypt-q2');
+        const encryptedOutput = document.getElementById('encrypted-output');
+
+        // Decryption fields
+        const encryptedInput = document.getElementById('encrypted-input');
+        const decryptPass = document.getElementById('decrypt-pass');
+        const decryptQ1 = document.getElementById('decrypt-q1');
+        const decryptQ2 = document.getElementById('decrypt-q2');
+        const decryptedOutput = document.getElementById('decrypted-output');
+
+
+        // --- NEW: Page Navigation Logic ---
+        const allPages = document.querySelectorAll('#page-container > section');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        function showPage(pageId, scrollToAnchor = null, clickedElement = null) {
+            // Hide all pages
+            allPages.forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            // Show the target page
+            const targetPage = document.getElementById('page-' + pageId); // <-- YAHAN Galti thi, ab fix ho gayi hai
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            // Handle mobile nav active state
+            // Only manage state if a mobile link was clicked
+            if (clickedElement && clickedElement.classList.contains('mobile-nav-link')) {
+                mobileNavLinks.forEach(link => {
+                    link.classList.remove('mobile-nav-active');
+                    link.classList.add('text-gray-600');
+                });
+
+                // Set active state for the clicked link
+                clickedElement.classList.add('mobile-nav-active');
+                clickedElement.classList.remove('text-gray-600');
+            } else {
+                // This handles desktop/footer clicks, reset mobile nav based on pageId
+                mobileNavLinks.forEach(link => {
+                    link.classList.remove('mobile-nav-active');
+                    link.classList.add('text-gray-600');
+                });
+
+                // Try to find the first mobile link that matches the pageId and activate it
+                // This will default to 'Home' for any 'home' page anchor
+                let firstMatchingLink = document.querySelector(`.mobile-nav-link[data-page="${pageId}"]`);
+                if(firstMatchingLink) {
+                    firstMatchingLink.classList.add('mobile-nav-active');
+                    firstMatchingLink.classList.remove('text-gray-600');
+                }
+            }
+
+
+            // Handle scrolling
+            if (scrollToAnchor) {
+                // We need a slight delay for the page to become visible before scrolling
+                setTimeout(() => {
+                    const anchorElement = document.querySelector(scrollToAnchor);
+                    if (anchorElement) {
+                        anchorElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 50);
+            } else {
+                // Scroll to top for new pages
+                window.scrollTo(0, 0);
+            }
+        }
+
+
+        // --- Helper Functions ---
+
+        // TextEncoder/TextDecoder
+        const enc = new TextEncoder();
+        const dec = new TextDecoder();
+
+        // Status message utility (now targets specific box)
+        function showStatus(message, isError = false, targetBox) {
+            targetBox.textContent = message;
+            
+            if (isError) {
+                targetBox.classList.remove('status-success-light');
+                targetBox.classList.add('status-error-light');
+            } else {
+                targetBox.classList.remove('status-error-light');
+                targetBox.classList.add('status-success-light');
+            }
+            targetBox.classList.remove('hidden');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                targetBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        // ArrayBuffer to Base64 string
+        function bufferToBase64(buffer) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+        }
+
+        // Base64 string to ArrayBuffer
+        function base64ToBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        /**
+         * Derive key from 3-step secrets using PBKDF2
+         */
+        async function deriveKey(password, q1, q2, salt) {
+            const combinedSecret = password + q1 + q2;
+            
+            const baseKey = await window.crypto.subtle.importKey(
+                "raw",
+                enc.encode(combinedSecret),
+                { name: "PBKDF2" },
+                false,
+                ["deriveKey"]
+            );
+
+            return await window.crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2", // Corrected PBKZDF2 back to PBKDF2
+                    salt: salt,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                baseKey,
+                { name: "AES-GCM", length: 256 },
+                true,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        // --- Core Functions ---
+
+        /**
+         * ENCRYPTION LOGIC
+         */
+        async function encryptData() {
+            const plainText = plainTextInput.value;
+            const password = encryptPass.value;
+            const q1 = encryptQ1.value;
+            const q2 = encryptQ2.value; // This is now Secret PIN
+            const passCriteriaEl = document.getElementById('password-criteria');
+
+            // Apply thunder animation
+            encryptButton.classList.add('thunder-animation');
+            setTimeout(() => {
+                encryptButton.classList.remove('thunder-animation');
+            }, 500); // Animation duration
+
+            // Check for empty fields first
+            if (!plainText || !password || !q1 || !q2) {
+                // Updated error message
+                showStatus("Error: All 4 fields (Message, Password, Answer, PIN) are required!", true, encryptStatusBox);
+                passCriteriaEl.classList.remove('text-red-600', 'font-bold'); // Ensure this is reset
+                return;
+            }
+
+            // --- PASSWORD VALIDATION ---
+            const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+            if (!passRegex.test(password)) {
+                showStatus("Password is too weak! It must be 8+ chars, with uppercase, lowercase, number, and special character.", true, encryptStatusBox);
+                passCriteriaEl.classList.add('text-red-600', 'font-bold');
+                return; // Stop encryption
+            } else {
+                passCriteriaEl.classList.remove('text-red-600', 'font-bold'); // Reset on success
+            }
+            // --- END VALIDATION ---
+
+            try {
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                const key = await deriveKey(password, q1, q2, salt);
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                
+                const encryptedBuffer = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    enc.encode(plainText)
+                );
+
+                const combinedBuffer = new Uint8Array(salt.length + iv.length + encryptedBuffer.byteLength);
+                combinedBuffer.set(salt, 0);
+                combinedBuffer.set(iv, salt.length);
+                combinedBuffer.set(new Uint8Array(encryptedBuffer), salt.length + iv.length);
+
+                const base64String = bufferToBase64(combinedBuffer.buffer);
+                encryptedOutput.value = base64String;
+                
+                // --- Funny Success Messages ---
+                const successEncryptMessages = [
+                    "Encryption successful! Your data is now gibberish to everyone else.",
+                    "Boom! Locked away. Not even a cat could get in here.",
+                    "Encrypted! The digital squirrels have hidden your nut.",
+                    "Data scrambled! Only you have the secret decoder ring.",
+                    "Success! Your secret is safe... unless you forget the password."
+                ];
+                const randomMsg = successEncryptMessages[Math.floor(Math.random() * successEncryptMessages.length)];
+                showStatus(randomMsg, false, encryptStatusBox);
+                // --- End Funny Messages ---
+
+            } catch (error) {
+                console.error("Encryption failed:", error);
+                if (error.name === "OperationError") {
+                    showStatus("Encryption Error: Crypto key derivation failed. Check console.", true, encryptStatusBox);
+                    console.error("Key derivation likely failed. Check PBKDF2 params.");
+                } else {
+                    showStatus("Encryption Error: " + error.message, true, encryptStatusBox);
+                }
+            }
+        }
+
+        /**
+         * DECRYPTION LOGIC
+         */
+        async function decryptData() {
+            const base64Input = encryptedInput.value;
+            const password = decryptPass.value;
+            const q1 = decryptQ1.value;
+            const q2 = decryptQ2.value; // This is now Secret PIN
+
+            // Apply thunder animation
+            decryptButton.classList.add('thunder-animation');
+            setTimeout(() => {
+                decryptButton.classList.remove('thunder-animation');
+            }, 500); // Animation duration
+
+            try {
+                if (!base64Input || !password || !q1 || !q2) {
+                    // Updated error message
+                    showStatus("Error: All 4 fields (Data, Password, Answer, PIN) are required!", true, decryptStatusBox);
+                    return;
+                }
+
+                const combinedBuffer = new Uint8Array(base64ToBuffer(base64Input));
+                const salt = combinedBuffer.slice(0, 16);
+                const iv = combinedBuffer.slice(16, 28);
+                const encryptedData = combinedBuffer.slice(28);
+                
+                const key = await deriveKey(password, q1, q2, salt);
+                const decryptedBuffer = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    encryptedData
+                );
+
+                const decryptedText = dec.decode(decryptedBuffer);
+                decryptedOutput.value = decryptedText;
+                
+                // --- Funny Success Messages ---
+                const successDecryptMessages = [
+                    "Decryption successful! The magic words worked.",
+                    "A-ha! The secret is revealed. Don't tell anyone.",
+                    "Welcome back, data! We missed you.",
+                    "Decrypted! You remembered the keys. Impressive.",
+                    "It's open! The treasure is yours again."
+                ];
+                const randomMsgDecrypt = successDecryptMessages[Math.floor(Math.random() * successDecryptMessages.length)];
+                showStatus(randomMsgDecrypt, false, decryptStatusBox);
+                // --- End Funny Messages ---
+
+            } catch (error) {
+                console.error("Decryption failed:", error);
+                decryptedOutput.value = ""; // Clear output field
+                // Updated error message
+                showStatus("DECRYPTION FAILED! Please check your Password, Security Answer, and Secret PIN. They are case-sensitive.", true, decryptStatusBox);
+            }
+        }
+
+        /**
+         * Clipboard Function
+         */
+        function copyToClipboard() {
+            if (!encryptedOutput.value) {
+                showStatus("Nothing to copy!", true, encryptStatusBox); // Show status in encrypt box
+                return;
+            }
+            
+            try {
+                // Select the text in the textarea
+                encryptedOutput.select();
+                encryptedOutput.setSelectionRange(0, 99999); /* For mobile devices */
+
+                // Copy the text to the clipboard
+                document.execCommand('copy');
+                showStatus("Encrypted data copied to clipboard!", false, encryptStatusBox); // Show status in encrypt box
+            } catch (err) {
+                showStatus("Copying failed!", true, encryptStatusBox); // Show status in encrypt box
+            }
+        }
+
+        // --- Event Listeners ---
+        encryptButton.addEventListener('click', encryptData);
+        decryptButton.addEventListener('click', decryptData);
+        copyIconButton.addEventListener('click', copyToClipboard); // Event listener for new icon button
+        
+    </script>
+</body>
+</html>
